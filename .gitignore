@@ -98,6 +98,15 @@ crashlytics-build.properties
 /Packages/
 /ProjectSettings/
 
+# AI agent instruction files
+AGENTS.md
+**/AGENTS.md
+CLAUDE.md
+**/CLAUDE.md
+
+# Example content (local/reference only)
+/Examples/
+
 # Legacy binary artifacts from ShaderlabVSCode reference
 /Examples/ShaderlabVSCode/Documents/*.pdf
 /Examples/ShaderlabVSCode/VSCodePlugin/*.vsix

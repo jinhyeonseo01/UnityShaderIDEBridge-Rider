@@ -17,8 +17,10 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Diagnostics
 
             var editorPath = EditorPrefs.GetString("kScriptsDefaultApp");
             var isRiderSelected = RiderOpenService.IsRiderEditorPath(editorPath);
+            var canUseCodeEditorApi = Settings.ShaderIdeBridgeSettings.instance.PreferCodeEditorApi && RiderOpenService.IsConfiguredEditorRider();
             var riderPackageInstalled = IsRiderPackageInstalled();
             var lockFileContainsRider = PackagesLockContainsRider();
+            var candidateEditors = RiderOpenService.GetRiderExecutableCandidatesSnapshot();
 
             builder.AppendLine("Shader IDE Bridge Diagnostics");
             builder.AppendLine("-----------------------------");
@@ -28,9 +30,15 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Diagnostics
             builder.AppendLine();
             builder.AppendLine($"External Script Editor: {(string.IsNullOrWhiteSpace(editorPath) ? "<empty>" : editorPath)}");
             builder.AppendLine($"Rider selected: {isRiderSelected}");
+            builder.AppendLine($"CodeEditor API active for Rider: {canUseCodeEditorApi}");
             builder.AppendLine($"com.unity.ide.rider installed: {riderPackageInstalled}");
             builder.AppendLine($"packages-lock contains Rider: {lockFileContainsRider}");
             builder.AppendLine($"Supported extensions: {string.Join(", ", ShaderBridgeConstants.SupportedExtensions.OrderBy(e => e))}");
+            builder.AppendLine($"Detected Rider executable candidates: {candidateEditors.Count}");
+            foreach (var candidate in candidateEditors.Take(5))
+            {
+                builder.AppendLine($"- {candidate}");
+            }
             builder.AppendLine();
 
             var selectedAssetPath = GetSelectedAssetPath();

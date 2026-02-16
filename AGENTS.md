@@ -1,2 +1,0 @@
-# UnityShaderIDEBridge-Rider
-

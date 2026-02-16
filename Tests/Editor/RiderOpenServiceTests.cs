@@ -1,5 +1,6 @@
 using Clerin.UnityShaderIdeBridge.Rider.Editor.Bridge;
 using NUnit.Framework;
+using UnityEditor;
 
 namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Tests
 {
@@ -24,6 +25,33 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Tests
 
             Assert.That(args, Does.Contain("--line 17"));
             Assert.That(args, Does.Contain($"\"{filePath}\""));
+        }
+
+        [Test]
+        public void IsConfiguredEditorRider_DependsOnEditorPref()
+        {
+            const string key = "kScriptsDefaultApp";
+            var original = EditorPrefs.GetString(key);
+
+            try
+            {
+                EditorPrefs.SetString(key, @"C:\Program Files\Microsoft VS Code\Code.exe");
+                Assert.That(RiderOpenService.IsConfiguredEditorRider(), Is.False);
+
+                EditorPrefs.SetString(key, @"C:\Program Files\JetBrains\Rider\bin\rider64.exe");
+                Assert.That(RiderOpenService.IsConfiguredEditorRider(), Is.True);
+            }
+            finally
+            {
+                if (string.IsNullOrEmpty(original))
+                {
+                    EditorPrefs.DeleteKey(key);
+                }
+                else
+                {
+                    EditorPrefs.SetString(key, original);
+                }
+            }
         }
     }
 }
