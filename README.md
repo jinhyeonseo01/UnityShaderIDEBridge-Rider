@@ -70,7 +70,9 @@ Double-click a supported file in Unity Project window. The package will try, in 
 
 1. Unity `CodeEditor` API (only when Unity is configured to use Rider)
 2. Start Rider process with `--line`
-3. Unity fallback open (`InternalEditorUtility.OpenFileAtLineExternal`, which uses your default External Script Editor)
+3. Unity fallback open only when Unity External Script Editor is already Rider
+
+If Rider cannot be resolved, the bridge logs a warning (when diagnostics are enabled) instead of silently forcing a non-Rider editor path.
 
 ### 3) Manual Open
 
@@ -98,6 +100,7 @@ opening and setup validation.
 - Run diagnostics: `Tools/Clerin/Shader IDE Bridge/Validate Rider Shader Setup`.
 - If your default External Script Editor is Visual Studio (intended), Rider must still be discoverable:
 - Install Rider normally, or via JetBrains Toolbox.
+- Versioned Windows installs are supported (for example `C:\Program Files\JetBrains\JetBrains Rider 2025.x\bin\rider64.exe`).
 - If needed, set `RIDER_PATH` (or `JETBRAINS_RIDER_PATH`) to the Rider executable.
 - Run diagnostics and verify `com.unity.ide.rider installed: true`.
 - If Rider is configured as Unity's External Script Editor and open is still failing, toggle "Prefer Unity CodeEditor API" off to force the process fallback.

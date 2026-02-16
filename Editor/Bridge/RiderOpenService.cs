@@ -6,6 +6,7 @@ using System.Linq;
 using Unity.CodeEditor;
 using UnityEditor;
 using UnityEditorInternal;
+using UnityEngine;
 
 namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Bridge
 {
@@ -35,9 +36,10 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Bridge
             var safeLine = Math.Max(1, line);
             var safeColumn = Math.Max(0, column);
             var settings = Settings.ShaderIdeBridgeSettings.instance;
+            var configuredEditorIsRider = IsConfiguredEditorRider();
 
             // Use CodeEditor API only when Unity's configured editor is already Rider.
-            if (settings.PreferCodeEditorApi && IsConfiguredEditorRider() && TryOpenViaCodeEditor(normalizedPath, safeLine, safeColumn))
+            if (settings.PreferCodeEditorApi && configuredEditorIsRider && TryOpenViaCodeEditor(normalizedPath, safeLine, safeColumn))
             {
                 return true;
             }
@@ -47,7 +49,21 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Bridge
                 return true;
             }
 
-            return TryOpenViaUnityFallback(normalizedPath, safeLine);
+            // Avoid silently routing shader files to a non-Rider default editor.
+            if (configuredEditorIsRider && TryOpenViaUnityFallback(normalizedPath, safeLine))
+            {
+                return true;
+            }
+
+            if (settings.EnableDiagnostics)
+            {
+                var configuredEditor = EditorPrefs.GetString(ScriptsDefaultAppKey);
+                var candidates = GetRiderExecutableCandidatesSnapshot();
+                Debug.LogWarning(
+                    $"[ShaderIDEBridge] Rider open failed. file='{normalizedPath}', configuredEditor='{configuredEditor}', riderCandidates={candidates.Count}");
+            }
+
+            return false;
         }
 
         internal static bool IsRiderEditorPath(string editorPath)
@@ -129,8 +145,11 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Bridge
             var programFilesX86 = Environment.GetEnvironmentVariable("ProgramFiles(x86)");
             AddCandidate(candidates, seen, Path.Combine(programFiles ?? string.Empty, "JetBrains", "Rider", "bin", "rider64.exe"));
             AddCandidate(candidates, seen, Path.Combine(programFilesX86 ?? string.Empty, "JetBrains", "Rider", "bin", "rider64.exe"));
+            AddWindowsStandardInstallCandidates(candidates, seen, programFiles);
+            AddWindowsStandardInstallCandidates(candidates, seen, programFilesX86);
+            AddWindowsLocalProgramsCandidates(candidates, seen);
             AddWindowsToolboxCandidates(candidates, seen);
-            AddPathCandidates(candidates, seen, "rider64.exe", "rider.exe");
+            AddPathCandidates(candidates, seen, "rider64.exe", "rider.exe", "rider.cmd", "rider.bat");
 #elif UNITY_EDITOR_OSX
             AddCandidate(candidates, seen, "/Applications/Rider.app/Contents/MacOS/rider");
             AddCandidate(candidates, seen, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Applications", "Rider.app", "Contents", "MacOS", "rider"));
@@ -156,14 +175,7 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Bridge
 
             try
             {
-                var startInfo = new ProcessStartInfo
-                {
-                    FileName = editorPath,
-                    Arguments = BuildRiderArguments(absolutePath, line),
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden
-                };
+                var startInfo = BuildStartInfo(editorPath, absolutePath, line);
 
                 Process.Start(startInfo);
                 return true;
@@ -202,17 +214,23 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Bridge
             }
 
 #if UNITY_EDITOR_WIN
-            var exeIndex = trimmed.IndexOf(".exe", StringComparison.OrdinalIgnoreCase);
-            if (exeIndex > 0)
+            var executableExtensions = new[] { ".exe", ".cmd", ".bat" };
+            foreach (var executableExtension in executableExtensions)
             {
-                var exePath = trimmed.Substring(0, exeIndex + 4).Trim('"');
-                if (File.Exists(exePath))
+                var extensionIndex = trimmed.IndexOf(executableExtension, StringComparison.OrdinalIgnoreCase);
+                if (extensionIndex <= 0)
                 {
-                    return exePath;
+                    continue;
+                }
+
+                var executablePath = trimmed.Substring(0, extensionIndex + executableExtension.Length).Trim('"');
+                if (File.Exists(executablePath))
+                {
+                    return executablePath;
                 }
             }
 #endif
-            return trimmed;
+            return string.Empty;
         }
 
         private static void AddPathCandidates(List<string> candidates, HashSet<string> seen, params string[] executableNames)
@@ -229,7 +247,7 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Bridge
             var separator = ':';
 #endif
             var pathEntries = pathValue.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var pathEntry in pathEntries.Select(entry => entry.Trim()).Where(entry => !string.IsNullOrWhiteSpace(entry)))
+            foreach (var pathEntry in pathEntries.Select(entry => entry.Trim().Trim('"')).Where(entry => !string.IsNullOrWhiteSpace(entry)))
             {
                 foreach (var executableName in executableNames)
                 {
@@ -239,11 +257,62 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Bridge
         }
 
 #if UNITY_EDITOR_WIN
+        private static void AddWindowsStandardInstallCandidates(List<string> candidates, HashSet<string> seen, string programFilesRoot)
+        {
+            if (string.IsNullOrWhiteSpace(programFilesRoot))
+            {
+                return;
+            }
+
+            try
+            {
+                var jetBrainsRoot = Path.Combine(programFilesRoot, "JetBrains");
+                if (!Directory.Exists(jetBrainsRoot))
+                {
+                    return;
+                }
+
+                foreach (var riderDir in Directory.GetDirectories(jetBrainsRoot, "*Rider*"))
+                {
+                    AddCandidate(candidates, seen, Path.Combine(riderDir, "bin", "rider64.exe"));
+                    AddCandidate(candidates, seen, Path.Combine(riderDir, "bin", "rider.exe"));
+                }
+            }
+            catch (Exception)
+            {
+                // Ignore probing issues and continue with other candidates.
+            }
+        }
+
+        private static void AddWindowsLocalProgramsCandidates(List<string> candidates, HashSet<string> seen)
+        {
+            try
+            {
+                var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                if (string.IsNullOrWhiteSpace(localAppData))
+                {
+                    return;
+                }
+
+                var riderBin = Path.Combine(localAppData, "Programs", "Rider", "bin");
+                AddCandidate(candidates, seen, Path.Combine(riderBin, "rider64.exe"));
+                AddCandidate(candidates, seen, Path.Combine(riderBin, "rider.exe"));
+            }
+            catch (Exception)
+            {
+                // Ignore probing issues and continue with other candidates.
+            }
+        }
+
         private static void AddWindowsToolboxCandidates(List<string> candidates, HashSet<string> seen)
         {
             try
             {
                 var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                var toolboxScripts = Path.Combine(localAppData, "JetBrains", "Toolbox", "scripts");
+                AddCandidate(candidates, seen, Path.Combine(toolboxScripts, "rider.cmd"));
+                AddCandidate(candidates, seen, Path.Combine(toolboxScripts, "rider.bat"));
+
                 var toolboxRoot = Path.Combine(localAppData, "JetBrains", "Toolbox", "apps", "Rider");
                 if (!Directory.Exists(toolboxRoot))
                 {
@@ -318,6 +387,35 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Bridge
             }
         }
 #endif
+
+        private static ProcessStartInfo BuildStartInfo(string editorPath, string absolutePath, int line)
+        {
+            var extension = Path.GetExtension(editorPath)?.ToLowerInvariant();
+            var lineArgs = BuildRiderArguments(absolutePath, line);
+
+#if UNITY_EDITOR_WIN
+            if (extension == ".cmd" || extension == ".bat")
+            {
+                return new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/c \"\"{editorPath}\" {lineArgs}\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                };
+            }
+#endif
+
+            return new ProcessStartInfo
+            {
+                FileName = editorPath,
+                Arguments = lineArgs,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden
+            };
+        }
 
         private static bool TryOpenViaUnityFallback(string absolutePath, int line)
         {

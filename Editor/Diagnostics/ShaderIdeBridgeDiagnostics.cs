@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using Clerin.UnityShaderIdeBridge.Rider.Editor.Bridge;
 using UnityEditor;
-using UnityEditor.PackageManager;
 
 namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Diagnostics
 {
@@ -74,7 +73,7 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Diagnostics
         {
             try
             {
-                var packages = PackageInfo.GetAllRegisteredPackages();
+                var packages = UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages();
                 return packages.Any(p => string.Equals(p.name, "com.unity.ide.rider", StringComparison.OrdinalIgnoreCase));
             }
             catch (Exception)

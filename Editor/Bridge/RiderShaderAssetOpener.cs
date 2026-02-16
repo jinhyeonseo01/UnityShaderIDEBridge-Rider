@@ -8,7 +8,8 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Bridge
 {
     internal static class RiderShaderAssetOpener
     {
-        [OnOpenAsset(0)]
+        // Run earlier than common IDE open handlers so shader assets are routed to Rider first.
+        [OnOpenAsset(-1000)]
         internal static bool OpenShaderAssetInRider(int instanceId, int line)
         {
             if (!Settings.ShaderIdeBridgeSettings.instance.EnableOnOpenAsset)
