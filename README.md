@@ -1,9 +1,9 @@
 # Unity Shader IDE Bridge for Rider
 
-![Cover](docs/Cover.png)
+![Cover](Documentation~/Cover.png)
 
 <p align="center">
-  <a href="README.md">English</a> · <a href="docs/README.ko.md">한국어</a> · <a href="docs/README.ja.md">日本語</a> · <a href="docs/README.zh.md">中文</a>
+  <a href="README.md">English</a> · <a href="Documentation~/README.ko.md">한국어</a> · <a href="Documentation~/README.ja.md">日本語</a> · <a href="Documentation~/README.zh.md">中文</a>
 </p>
 
 Open **shader-related files** in **JetBrains Rider**, while keeping **C# scripts** opening in your **primary IDE** (Visual Studio / VS Code / etc.).
