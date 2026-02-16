@@ -7,6 +7,10 @@ Author: Clerin
 GitHub: `jinhyeonseo01`  
 Blog: `techblog.clerindev.com`
 
+## Primary Goal
+
+Keep C# scripts opening in your main IDE (for example Visual Studio 2026), while opening shader-related files in Rider.
+
 ## Features
 
 - Automatically intercepts shader-related asset opens (double-click in Project window).
@@ -28,7 +32,12 @@ Blog: `techblog.clerindev.com`
 - Unity `6000.3.x` (Unity 6.3)
 - JetBrains Rider installed
 - Unity package `com.unity.ide.rider` (declared as a dependency in `package.json`)
-- Unity External Script Editor set to Rider
+- Unity External Script Editor can be your default C# IDE (for example Visual Studio). This package does not change C#.
+
+Optional (only if Rider is not detected automatically):
+
+- Set `RIDER_PATH` (or `JETBRAINS_RIDER_PATH`) to Rider executable path
+- Ensure Rider is available via JetBrains Toolbox or on `PATH`
 
 ## Installation
 
@@ -66,9 +75,9 @@ Project Settings: `Project/Clerin/Shader IDE Bridge`
 
 Double-click a supported file in Unity Project window. The package will try, in order:
 
-1. Unity `CodeEditor` API (best effort for line/column)
+1. Unity `CodeEditor` API (only when Unity is configured to use Rider)
 2. Start Rider process with `--line`
-3. Unity fallback open (`InternalEditorUtility.OpenFileAtLineExternal`)
+3. Unity fallback open (`InternalEditorUtility.OpenFileAtLineExternal`, which uses your default External Script Editor)
 
 ### 3) Manual Open
 
@@ -93,9 +102,12 @@ opening and setup validation.
 ## Troubleshooting
 
 - Rider does not open:
-- Ensure External Script Editor is Rider (Unity Preferences).
+- Run diagnostics: `Tools/Clerin/Shader IDE Bridge/Validate Rider Shader Setup`.
+- If your default External Script Editor is Visual Studio (intended), Rider must still be discoverable:
+- Install Rider normally, or via JetBrains Toolbox.
+- If needed, set `RIDER_PATH` (or `JETBRAINS_RIDER_PATH`) to the Rider executable.
 - Run diagnostics and verify `com.unity.ide.rider installed: true`.
-- Toggle "Prefer Unity CodeEditor API" off to force Rider process fallback.
+- If Rider is configured as Unity's External Script Editor and open is still failing, toggle "Prefer Unity CodeEditor API" off to force the process fallback.
 - Line is ignored:
 - Some fallbacks only support line, not column; diagnostics will still confirm the path and configuration.
 - File is not intercepted:
@@ -109,7 +121,7 @@ opening and setup validation.
 - Unity samples: `Samples~/`
 - Unity EditMode tests: `Tests/Editor/`
 - NuGet shared core: `src/Clerin.UnityShaderIdeBridge.Core/`
-- Legacy reference source: `Examples/ShaderlabVSCode/` (not shipped, kept for porting reference)
+- Porting notes: `Documentation~/porting-matrix.md`
 
 ## Development
 
