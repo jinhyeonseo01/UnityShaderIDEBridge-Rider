@@ -1,5 +1,11 @@
 # Unity Shader IDE Bridge (Rider)
 
+![Cover](docs/Cover.png)
+
+<p align="center">
+  <a href="README.md">English</a> · <a href="docs/README.ko.md">한국어</a> · <a href="docs/README.ja.md">日本語</a> · <a href="docs/README.zh.md">中文</a>
+</p>
+
 `com.clerin.unity.shader-ide-bridge-rider` is a Unity Editor package that opens shader-related files in JetBrains Rider,
 while keeping C# scripts opening in your main IDE (for example Visual Studio 2026).
 
