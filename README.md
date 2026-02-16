@@ -2,13 +2,6 @@
 
 `com.clerin.unity.shader-ide-bridge-rider` is a Unity Editor package that improves opening Shader/HLSL files from Unity
 in JetBrains Rider (Unity 6.3 baseline).
-
-Author: Clerin  
-GitHub: `jinhyeonseo01`  
-Blog: `techblog.clerindev.com`
-
-## Primary Goal
-
 Keep C# scripts opening in your main IDE (for example Visual Studio 2026), while opening shader-related files in Rider.
 
 ## Features
