@@ -20,6 +20,8 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Diagnostics
             var riderPackageInstalled = IsRiderPackageInstalled();
             var lockFileContainsRider = PackagesLockContainsRider();
             var candidateEditors = RiderOpenService.GetRiderExecutableCandidatesSnapshot();
+            var lastSuccessPath = RiderOpenService.GetLastSuccessPath();
+            var lastSuccessValid = RiderOpenService.IsLastSuccessPathValid();
 
             builder.AppendLine("Shader IDE Bridge Diagnostics");
             builder.AppendLine("-----------------------------");
@@ -29,6 +31,7 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Diagnostics
             builder.AppendLine();
             builder.AppendLine($"External Script Editor: {(string.IsNullOrWhiteSpace(editorPath) ? "<empty>" : editorPath)}");
             builder.AppendLine($"Rider selected: {isRiderSelected}");
+            builder.AppendLine($"Bridge active (OnOpenAsset): {settings.EnableOnOpenAsset && !isRiderSelected}");
             builder.AppendLine($"CodeEditor API active for Rider: {canUseCodeEditorApi}");
             builder.AppendLine($"com.unity.ide.rider installed: {riderPackageInstalled}");
             builder.AppendLine($"packages-lock contains Rider: {lockFileContainsRider}");
@@ -38,6 +41,8 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Diagnostics
             {
                 builder.AppendLine($"- {candidate}");
             }
+            builder.AppendLine($"Last success path: {(string.IsNullOrWhiteSpace(lastSuccessPath) ? "<empty>" : lastSuccessPath)}");
+            builder.AppendLine($"Last success path valid: {lastSuccessValid}");
             builder.AppendLine();
 
             var selectedAssetPath = GetSelectedAssetPath();

@@ -19,3 +19,4 @@
 - Use semantic versioning.
 - Keep UPM and NuGet versions aligned.
 - Tag format: `vX.Y.Z`.
+- Tagging `vX.Y.Z` triggers the UPM/OpenUPM release workflow (`release-upm.yml`).

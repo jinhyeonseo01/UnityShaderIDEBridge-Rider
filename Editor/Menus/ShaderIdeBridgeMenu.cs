@@ -10,6 +10,15 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Menus
         [MenuItem("Tools/Clerin/Shader IDE Bridge/Open In Rider", false, 110)]
         private static void OpenSelectedInRider()
         {
+            if (!RiderShaderAssetOpener.IsBridgeEnabledForCurrentEditor())
+            {
+                EditorUtility.DisplayDialog(
+                    "Shader IDE Bridge",
+                    "Bridge is disabled because Unity External Script Editor is already Rider.",
+                    "OK");
+                return;
+            }
+
             var selected = Selection.activeObject;
             if (selected == null)
             {
@@ -34,6 +43,11 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Menus
         [MenuItem("Tools/Clerin/Shader IDE Bridge/Open In Rider", true)]
         private static bool ValidateOpenSelectedInRider()
         {
+            if (!RiderShaderAssetOpener.IsBridgeEnabledForCurrentEditor())
+            {
+                return false;
+            }
+
             var selected = Selection.activeObject;
             if (selected == null)
             {
@@ -50,6 +64,13 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Menus
             var report = ShaderIdeBridgeDiagnostics.BuildReport();
             Debug.Log(report);
             EditorUtility.DisplayDialog("Shader IDE Bridge Diagnostics", report, "OK");
+        }
+
+        [MenuItem("Tools/Clerin/Shader IDE Bridge/Clear Rider Cache", false, 112)]
+        private static void ClearRiderCache()
+        {
+            RiderOpenService.ClearCandidateCache();
+            EditorUtility.DisplayDialog("Shader IDE Bridge", "Rider cache cleared. Next open will rescan standard paths.", "OK");
         }
     }
 }

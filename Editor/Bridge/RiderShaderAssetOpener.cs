@@ -17,6 +17,11 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Bridge
                 return false;
             }
 
+            if (!IsBridgeEnabledForCurrentEditor())
+            {
+                return false;
+            }
+
             var assetObject = EditorUtility.InstanceIDToObject(instanceId);
             if (assetObject == null)
             {
@@ -47,6 +52,11 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Bridge
         internal static bool ShouldHandleAssetPath(string assetPath)
         {
             return ShaderBridgeConstants.IsSupportedShaderAssetPath(assetPath);
+        }
+
+        internal static bool IsBridgeEnabledForCurrentEditor()
+        {
+            return !RiderOpenService.IsConfiguredEditorRider();
         }
 
         internal static string ToAbsoluteAssetPath(string assetPath)
