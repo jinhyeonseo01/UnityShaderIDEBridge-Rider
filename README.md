@@ -1,4 +1,4 @@
-# Unity Shader IDE Bridge (Rider)
+# Unity Shader IDE Bridge for Rider
 
 ![Cover](docs/Cover.png)
 
@@ -6,44 +6,17 @@
   <a href="README.md">English</a> · <a href="docs/README.ko.md">한국어</a> · <a href="docs/README.ja.md">日本語</a> · <a href="docs/README.zh.md">中文</a>
 </p>
 
-`com.clerin.unity.shader-ide-bridge-rider` is a Unity Editor package that opens shader-related files in JetBrains Rider,
-while keeping C# scripts opening in your main IDE (for example Visual Studio 2026).
+Open **shader-related files** in **JetBrains Rider**, while keeping **C# scripts** opening in your **primary IDE** (Visual Studio / VS Code / etc.).
 
-This is for the workflow where Unity can only pick one External Script Editor, but you want:
+> Unity can only select one **External Script Editor**. This package gives you a split workflow:
+> - C# → your main IDE  
+> - Shader/HLSL/etc. → Rider
 
-- C# in your primary IDE
-- `.shader` / `.hlsl` / etc. in Rider
+**UPM package name:** `com.clerin.unity.shader-ide-bridge-rider`
 
-If your Unity External Script Editor is already Rider, this package stays inactive and does not intercept file opens.
+---
 
-## What It Does
-
-- Intercepts double-click (Unity `OnOpenAsset`) for shader-related assets only.
-- Does not change Unity's External Script Editor setting (your C# workflow stays as-is).
-- Resolves Rider executable (Toolbox / Program Files / `PATH` / env vars) and launches Rider with `--line`.
-- Provides a diagnostics report so you can see why Rider was (not) detected.
-
-## Supported File Types
-
-- `.shader`
-- `.compute`
-- `.cginc`
-- `.glslinc`
-- `.hlsl`
-- `.cg`
-
-## Requirements
-
-- Unity `6000.3.x` (Unity 6.3 baseline)
-- JetBrains Rider installed
-- Unity package `com.unity.ide.rider` (declared in `package.json`)
-
-Recommended for reliability and speed:
-
-- Set `RIDER_PATH` (or `JETBRAINS_RIDER_PATH` / `JETBRAINS_RIDER`) to your Rider executable path.
-  - Windows example: `C:\Program Files\JetBrains\JetBrains Rider 2025.x\bin\rider64.exe`
-
-## Installation (UPM)
+## Installation (UPM / Git URL)
 
 Unity: `Window > Package Manager > + > Add package from git URL...`
 
@@ -51,59 +24,112 @@ Unity: `Window > Package Manager > + > Add package from git URL...`
 https://github.com/jinhyeonseo01/UnityShaderIDEBridge-Rider.git
 ```
 
-Specific tag:
+Specific version tag:
 
 ```text
-https://github.com/jinhyeonseo01/UnityShaderIDEBridge-Rider.git#v0.1.0
+https://github.com/jinhyeonseo01/UnityShaderIDEBridge-Rider.git#v1.0.0
 ```
 
-## Setup
+---
+
+## Quick Setup
 
 1. Unity: `Edit > Preferences > External Tools`
-2. Set `External Script Editor` to your C# IDE (Visual Studio, VS Code, etc.)
-3. Project Settings: `Project/Clerin/Shader IDE Bridge`
+2. Set **External Script Editor** to your **C# IDE** (Visual Studio / VS Code / etc.)
+3. Open Project Settings: `Project > Clerin > Shader IDE Bridge`
 
-Settings:
+### Settings
 
-- `Enable OnOpenAsset Bridge`: enables the shader-only bridge.
-- `Enable Diagnostics Warnings`: logs warnings when Rider cannot be resolved.
+| Setting | Meaning |
+|---|---|
+| **Enable OnOpenAsset Bridge** | Intercept shader files and open them in Rider |
+| **Enable Diagnostics Warnings** | Log warnings if Rider cannot be resolved |
 
-Note:
+**Note:** If your External Script Editor is already **Rider**, the bridge stays **inactive** (Unity default behavior), and the manual menu is hidden/disabled.
 
-- If `External Script Editor` is Rider, the bridge is disabled (Unity default open flow is used) and the manual menu is hidden/disabled.
+---
+
+## Features
+
+- Hooks Unity’s `OnOpenAsset` **only for shader-related extensions**
+- **Does not** change Unity’s *External Script Editor* setting
+- Finds Rider via **Toolbox / Program Files / PATH / env vars**, then launches with line support (`--line`)
+- Includes **Diagnostics** so you can see *why Rider was (not) detected*
+
+---
+
+## Supported File Types
+
+`.shader`, `.compute`, `.hlsl`, `.cginc`, `.glslinc`, `.cg`
+
+---
+
+## Requirements
+
+- Unity **6000.3.x** (Unity 6.3 baseline)
+- JetBrains **Rider** installed
+- Unity package **`com.unity.ide.rider`** (declared in `package.json`)
+
+### Recommended (for reliability + speed)
+
+Set one of these environment variables to Rider’s executable:
+
+- `RIDER_PATH` *(preferred)*
+- `JETBRAINS_RIDER_PATH`
+- `JETBRAINS_RIDER`
+
+Windows example:
+
+```text
+C:\Program Files\JetBrains\JetBrains Rider 2025.x\bin\rider64.exe
+```
+
+---
 
 ## Usage
 
-Automatic:
+### Automatic (recommended)
 
 - Double-click a supported shader file in the Unity Project window.
 
-Manual:
+### Manual
 
 - Select a supported asset
-- `Tools/Clerin/Shader IDE Bridge/Open In Rider`
+- `Tools > Clerin > Shader IDE Bridge > Open In Rider`
 
-Diagnostics:
+### Diagnostics
 
-- `Tools/Clerin/Shader IDE Bridge/Validate Rider Shader Setup`
-- `Tools/Clerin/Shader IDE Bridge/Clear Rider Cache` (forces a fresh path scan on next open)
+- `Tools > Clerin > Shader IDE Bridge > Validate Rider Shader Setup`
+- `Tools > Clerin > Shader IDE Bridge > Clear Rider Cache` *(forces a fresh path scan on next open)*
 
-## Limitations (By Design)
+---
 
-- No custom include indexing, no include-mirroring, no language service.
-- Rider is responsible for Shader/HLSL parsing, navigation, and include resolution.
+## Limitations (by design)
+
+- No custom include indexing / mirroring
+- No extra language service or parsing layer  
+  → Rider handles Shader/HLSL parsing, navigation, and include resolution.
+
+---
 
 ## Troubleshooting
 
-- Rider does not open or opens slowly the first time:
-  - Run diagnostics: `Tools/Clerin/Shader IDE Bridge/Validate Rider Shader Setup`.
-  - Set `RIDER_PATH` to the Rider executable to avoid path probing on first open.
-- File is not intercepted:
-  - Only the listed extensions are handled.
-  - If Unity External Script Editor is Rider, interception is disabled by design.
-- It opens in the wrong IDE:
-  - Check that `External Script Editor` is not Rider (this package is meant for split-IDE setups).
+### Rider doesn’t open / first open is slow
+
+- Run: `Tools > Clerin > Shader IDE Bridge > Validate Rider Shader Setup`
+- Set `RIDER_PATH` to avoid path probing on first open.
+
+### File isn’t intercepted
+
+- Only the listed extensions are handled.
+- If External Script Editor is Rider, interception is disabled by design.
+
+### It opens in the wrong IDE
+
+- Confirm External Script Editor is **not** Rider (this package is for split-IDE setups).
+
+---
 
 ## License
 
-MIT (see `LICENSE.md`)
+MIT — see `LICENSE.md`
