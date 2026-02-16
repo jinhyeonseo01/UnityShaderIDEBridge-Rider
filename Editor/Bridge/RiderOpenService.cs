@@ -6,7 +6,6 @@ using System.Linq;
 using Unity.CodeEditor;
 using UnityEditor;
 using UnityEditorInternal;
-using UnityEngine;
 
 namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Bridge
 {
@@ -59,7 +58,7 @@ namespace Clerin.UnityShaderIdeBridge.Rider.Editor.Bridge
             {
                 var configuredEditor = EditorPrefs.GetString(ScriptsDefaultAppKey);
                 var candidates = GetRiderExecutableCandidatesSnapshot();
-                Debug.LogWarning(
+                UnityEngine.Debug.LogWarning(
                     $"[ShaderIDEBridge] Rider open failed. file='{normalizedPath}', configuredEditor='{configuredEditor}', riderCandidates={candidates.Count}");
             }
 
