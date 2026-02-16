@@ -1,0 +1,47 @@
+{
+  "name": "com.clerin.unity.shader-ide-bridge-rider",
+  "displayName": "Clerin Shader IDE Bridge (Rider)",
+  "version": "0.1.0",
+  "unity": "6000.3",
+  "description": "Unity Shader/HLSL open bridge for JetBrains Rider with setup diagnostics.",
+  "keywords": [
+    "unity",
+    "shader",
+    "hlsl",
+    "rider",
+    "ide",
+    "bridge",
+    "urp",
+    "hdrp",
+    "builtin"
+  ],
+  "author": {
+    "name": "Clerin",
+    "url": "https://techblog.clerindev.com/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jinhyeonseo01/UnityShaderIDEBridge-Rider.git"
+  },
+  "license": "MIT",
+  "samples": [
+    {
+      "displayName": "URP Basic",
+      "description": "Basic URP shader/hlsl bridge sample.",
+      "path": "Samples~/URP-Basic"
+    },
+    {
+      "displayName": "HDRP Basic",
+      "description": "Basic HDRP shader/hlsl bridge sample.",
+      "path": "Samples~/HDRP-Basic"
+    },
+    {
+      "displayName": "BuiltIn Basic",
+      "description": "Basic BuiltIn shader/hlsl bridge sample.",
+      "path": "Samples~/BuiltIn-Basic"
+    }
+  ],
+  "dependencies": {
+    "com.unity.ide.rider": "3.0.39"
+  }
+}

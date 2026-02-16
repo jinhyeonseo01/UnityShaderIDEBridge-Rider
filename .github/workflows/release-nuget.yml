@@ -1,0 +1,38 @@
+name: Release NuGet
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  publish-nuget:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Validate versions
+        shell: pwsh
+        run: |
+          $tag = "${env:GITHUB_REF_NAME}".TrimStart('v')
+          $pkg = (Get-Content -Raw package.json | ConvertFrom-Json).version
+          if ($pkg -ne $tag) { throw "package.json version '$pkg' does not match tag '$tag'." }
+
+          [xml]$csproj = Get-Content -Raw "src/Clerin.UnityShaderIdeBridge.Core/Clerin.UnityShaderIdeBridge.Core.csproj"
+          $csprojVersion = $csproj.Project.PropertyGroup.Version
+          if ($csprojVersion -and $csprojVersion -ne $tag) { throw "csproj Version '$csprojVersion' does not match tag '$tag'." }
+
+      - name: Pack
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          dotnet pack src/Clerin.UnityShaderIdeBridge.Core/Clerin.UnityShaderIdeBridge.Core.csproj -c Release -p:Version="$VERSION" -o out
+
+      - name: Push
+        if: ${{ secrets.NUGET_API_KEY != '' }}
+        run: dotnet nuget push "out/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

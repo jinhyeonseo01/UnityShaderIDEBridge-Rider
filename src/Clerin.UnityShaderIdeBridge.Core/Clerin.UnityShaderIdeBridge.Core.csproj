@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageId>Clerin.UnityShaderIdeBridge.Core</PackageId>
+    <Title>Clerin Unity Shader IDE Bridge Core</Title>
+    <Description>Shared minimal utilities for shader file classification.</Description>
+    <Authors>Clerin</Authors>
+    <RepositoryUrl>https://github.com/jinhyeonseo01/UnityShaderIDEBridge-Rider</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>

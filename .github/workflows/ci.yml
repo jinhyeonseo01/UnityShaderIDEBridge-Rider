@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  dotnet-tests:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore Tests/Clerin.UnityShaderIdeBridge.Core.Tests/Clerin.UnityShaderIdeBridge.Core.Tests.csproj
+
+      - name: Test
+        run: dotnet test Tests/Clerin.UnityShaderIdeBridge.Core.Tests/Clerin.UnityShaderIdeBridge.Core.Tests.csproj --configuration Release --no-restore
+
+  unity-editmode-tests:
+    runs-on: ubuntu-latest
+    if: ${{ secrets.UNITY_LICENSE != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Unity EditMode tests
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          unityVersion: 6000.3.8f1
+          testMode: editmode
